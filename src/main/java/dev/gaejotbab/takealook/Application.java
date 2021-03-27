@@ -27,8 +27,14 @@ public class Application {
             System.exit(EXIT_FAILURE);
         }
 
-        Server server = new Server(port);
-        server.run();
+        try {
+            Server server = new Server(port);
+            server.run();
+        } catch (TakealookException e) {
+            logger.error("문제가 발생했습니다: {}", e.getMessage(), e);
+        } catch (Throwable e) {
+            logger.error("예상치 못한 예외가 발생했습니다: {}", e.getMessage(), e);
+        }
     }
 
     public static void main(String[] args) {
