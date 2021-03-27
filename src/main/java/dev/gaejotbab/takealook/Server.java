@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class Server {
     private final Logger logger = LoggerFactory.getLogger(Server.class);
@@ -52,10 +53,21 @@ public class Server {
 
             HttpVersion version = HttpVersion.VERSION_1_1;
 
+            HashMap<String, String> headers = new HashMap<>();
+
+            String line;
+            while ((line = bufferedReader.readLine()).length() > 0) {
+                String headerTokens[] = line.split(": *", 2);
+                String name = headerTokens[0];
+                String value = headerTokens[1];
+                headers.put(name, value);
+            }
+
             HttpRequest request = new HttpRequest.Builder()
                     .setMethod(method)
                     .setTarget(requestTarget)
                     .setVersion(version)
+                    .setHeaders(headers)
                     .build();
 
             socket.close();
