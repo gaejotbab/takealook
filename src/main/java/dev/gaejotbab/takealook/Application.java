@@ -19,13 +19,16 @@ public class Application {
             System.exit(EXIT_FAILURE);
         }
 
-        int port;
+        int port = 0;
         try {
             port = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
             logger.error("포트가 잘못되었습니다.");
             System.exit(EXIT_FAILURE);
         }
+
+        Server server = new Server(port);
+        server.run();
     }
 
     public static void main(String[] args) {
