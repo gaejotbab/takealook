@@ -1,6 +1,7 @@
 package dev.gaejotbab.takealook;
 
 import dev.gaejotbab.gaevlet.http.HttpMethod;
+import dev.gaejotbab.gaevlet.http.HttpRequest;
 import dev.gaejotbab.gaevlet.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +52,11 @@ public class Server {
 
             HttpVersion version = HttpVersion.VERSION_1_1;
 
-            logger.info("HTTP 메서드: {}", method);
-            logger.info("HTTP 요청 대상: {}", requestTarget);
-            logger.info("HTTP 버전: 1.1");
+            HttpRequest request = new HttpRequest.Builder()
+                    .setMethod(method)
+                    .setTarget(requestTarget)
+                    .setVersion(version)
+                    .build();
 
             socket.close();
         } catch (IOException e) {
