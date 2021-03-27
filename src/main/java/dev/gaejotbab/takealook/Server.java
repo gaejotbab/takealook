@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class Server {
@@ -69,6 +70,30 @@ public class Server {
                     .setVersion(version)
                     .setHeaders(headers)
                     .build();
+
+            OutputStream outputStream = socket.getOutputStream();
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+            PrintWriter printWriter = new PrintWriter(outputStreamWriter);
+
+            printWriter.println("HTTP/1.1 200 OK\r");
+            printWriter.println("Content-Type: text/html; charset=UTF-8\r");
+            printWriter.println("\r");
+            printWriter.println("""
+                    <!DOCTYPE html>
+                    <html lang="ko">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>떼껄룩 테스트 페이지</title>
+                    </head>
+                    <body>
+                        <h1>떼껄룩 테스트 페이지</h1>
+                        <p>별 거 없습니다.</p>
+                    </body>
+                    </html>
+                    """);
+            printWriter.close();
 
             socket.close();
         } catch (IOException e) {
