@@ -1,8 +1,8 @@
 package dev.gaejotbab.takealook;
 
-import dev.gaejotbab.gaevlet.http.HttpMethod;
-import dev.gaejotbab.gaevlet.http.HttpRequest;
-import dev.gaejotbab.gaevlet.http.HttpVersion;
+import dev.gaejotbab.gaevlet.HttpMethod;
+import dev.gaejotbab.gaevlet.HttpRequest;
+import dev.gaejotbab.gaevlet.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

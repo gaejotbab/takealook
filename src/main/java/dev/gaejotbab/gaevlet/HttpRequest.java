@@ -1,4 +1,4 @@
-package dev.gaejotbab.gaevlet.http;
+package dev.gaejotbab.gaevlet;
 
 import java.util.Map;
 

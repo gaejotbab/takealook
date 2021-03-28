@@ -1,4 +1,4 @@
-package dev.gaejotbab.gaevlet.http;
+package dev.gaejotbab.gaevlet;
 
 public enum HttpVersion {
     VERSION_1_1,
