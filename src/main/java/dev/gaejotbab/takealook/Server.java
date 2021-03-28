@@ -4,6 +4,9 @@ import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
 import dev.gaejotbab.gaevlet.HttpVersion;
+import dev.gaejotbab.webapp.AboutHandler;
+import dev.gaejotbab.webapp.HomeHandler;
+import dev.gaejotbab.webapp.NotFoundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +22,9 @@ public class Server {
 
     private final int port;
 
-    private final MyBusinessLogicHandler myBusinessLogicHandler = new MyBusinessLogicHandler();
+    private final HomeHandler homeHandler = new HomeHandler();
+    private final NotFoundHandler notFoundHandler = new NotFoundHandler();
+    private final AboutHandler aboutHandler = new AboutHandler();
 
     public Server(int port) {
         this.port = port;
@@ -75,7 +80,22 @@ public class Server {
                     .setHeaders(requestHeaders)
                     .build();
 
-            HttpResponse response = myBusinessLogicHandler.handle(request);
+            HttpResponse response;
+
+            switch (requestTarget) {
+                case "/":
+                    response = homeHandler.handle(request);
+                    break;
+                case "/favicon.ico":
+                    response = notFoundHandler.handle(request);
+                    break;
+                case "/about":
+                    response = aboutHandler.handle(request);
+                    break;
+                default:
+                    response = notFoundHandler.handle(request);
+                    break;
+            }
 
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStreamWriter);

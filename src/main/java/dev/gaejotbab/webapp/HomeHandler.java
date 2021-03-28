@@ -1,4 +1,4 @@
-package dev.gaejotbab.takealook;
+package dev.gaejotbab.webapp;
 
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
@@ -6,7 +6,7 @@ import dev.gaejotbab.gaevlet.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class MyBusinessLogicHandler {
+public class HomeHandler {
     public HttpResponse handle(HttpRequest request) {
         Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");
 
@@ -22,6 +22,7 @@ public class MyBusinessLogicHandler {
                 <body>
                     <h1>떼껄룩 테스트 페이지</h1>
                     <p>별 거 없습니다.</p>
+                    <p><a href="/about">소개</a></p>
                 </body>
                 </html>
                 """;
