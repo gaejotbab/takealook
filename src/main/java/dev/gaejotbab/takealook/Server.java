@@ -1,5 +1,6 @@
 package dev.gaejotbab.takealook;
 
+import dev.gaejotbab.gaevlet.Gaevlet;
 import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
@@ -10,7 +11,12 @@ import dev.gaejotbab.webapp.NotFoundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -80,22 +86,14 @@ public class Server {
                     .setHeaders(requestHeaders)
                     .build();
 
-            HttpResponse response;
+            Map<String, Gaevlet> targetGaevletMappings = Map.of(
+                    "/", homeHandler,
+                    "/favicon.ico", notFoundHandler,
+                    "/about", aboutHandler
+            );
 
-            switch (requestTarget) {
-                case "/":
-                    response = homeHandler.handle(request);
-                    break;
-                case "/favicon.ico":
-                    response = notFoundHandler.handle(request);
-                    break;
-                case "/about":
-                    response = aboutHandler.handle(request);
-                    break;
-                default:
-                    response = notFoundHandler.handle(request);
-                    break;
-            }
+            Gaevlet gaevlet = targetGaevletMappings.getOrDefault(requestTarget, notFoundHandler);
+            HttpResponse response = gaevlet.handle(request);
 
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStreamWriter);
