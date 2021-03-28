@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class HomeHandler implements Gaevlet {
     @Override
-    public HttpResponse handle(HttpRequest request) {
+    public void service(HttpRequest request, HttpResponse response) {
         Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");
 
         String responseBodyString = """
@@ -31,14 +31,10 @@ public class HomeHandler implements Gaevlet {
 
         byte[] body = responseBodyString.getBytes(StandardCharsets.UTF_8);
 
-        HttpResponse response = HttpResponse.newBuilder()
-                .setVersion(request.getVersion())
-                .setStatusCode(200)
-                .setStatusText("OK")
-                .setHeaders(responseHeaders)
-                .setBody(body)
-                .build();
-
-        return response;
+        response.setVersion(request.getVersion());
+        response.setStatusCode(200);
+        response.setStatusText("OK");
+        response.setHeaders(responseHeaders);
+        response.setBody(body);
     }
 }

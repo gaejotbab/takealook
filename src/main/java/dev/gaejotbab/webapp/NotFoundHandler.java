@@ -8,14 +8,10 @@ import java.util.Collections;
 
 public class NotFoundHandler implements Gaevlet {
     @Override
-    public HttpResponse handle(HttpRequest request) {
-        HttpResponse response = HttpResponse.newBuilder()
-                .setVersion(request.getVersion())
-                .setStatusCode(404)
-                .setStatusText("Not Found")
-                .setHeaders(Collections.emptyMap())
-                .build();
-
-        return response;
+    public void service(HttpRequest request, HttpResponse response) {
+        response.setVersion(request.getVersion());
+        response.setStatusCode(404);
+        response.setStatusText("Not Found");
+        response.setHeaders(Collections.emptyMap());
     }
 }

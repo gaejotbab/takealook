@@ -3,19 +3,11 @@ package dev.gaejotbab.gaevlet;
 import java.util.Map;
 
 public class HttpResponse {
-    private final HttpVersion version;
-    private final int statusCode;
-    private final String statusText;
-    private final Map<String, String> headers;
-    private final byte[] body;
-
-    public HttpResponse(HttpVersion version, int statusCode, String statusText, Map<String, String> headers, byte[] body) {
-        this.version = version;
-        this.statusCode = statusCode;
-        this.statusText = statusText;
-        this.headers = headers;
-        this.body = body;
-    }
+    private HttpVersion version;
+    private int statusCode;
+    private String statusText;
+    private Map<String, String> headers;
+    private byte[] body;
 
     public HttpVersion getVersion() {
         return version;
@@ -37,44 +29,23 @@ public class HttpResponse {
         return body;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public void setVersion(HttpVersion version) {
+        this.version = version;
     }
 
-    public static class Builder {
-        private HttpVersion version;
-        private int statusCode;
-        private String statusText;
-        private Map<String, String> headers;
-        private byte[] body = null;
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
 
-        public Builder setVersion(HttpVersion version) {
-            this.version = version;
-            return this;
-        }
+    public void setStatusText(String statusText) {
+        this.statusText = statusText;
+    }
 
-        public Builder setStatusCode(int statusCode) {
-            this.statusCode = statusCode;
-            return this;
-        }
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
 
-        public Builder setStatusText(String statusText) {
-            this.statusText = statusText;
-            return this;
-        }
-
-        public Builder setHeaders(Map<String, String> headers) {
-            this.headers = headers;
-            return this;
-        }
-
-        public Builder setBody(byte[] body) {
-            this.body = body;
-            return this;
-        }
-
-        public HttpResponse build() {
-            return new HttpResponse(version, statusCode, statusText, headers, body);
-        }
+    public void setBody(byte[] body) {
+        this.body = body;
     }
 }

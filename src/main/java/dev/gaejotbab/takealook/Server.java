@@ -93,7 +93,8 @@ public class Server {
             );
 
             Gaevlet gaevlet = targetGaevletMappings.getOrDefault(requestTarget, notFoundHandler);
-            HttpResponse response = gaevlet.handle(request);
+            HttpResponse response = new HttpResponse();
+            gaevlet.service(request, response);
 
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStreamWriter);
