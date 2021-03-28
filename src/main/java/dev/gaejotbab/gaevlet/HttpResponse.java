@@ -2,33 +2,31 @@ package dev.gaejotbab.gaevlet;
 
 import java.util.Map;
 
-public class HttpRequest {
-    private final HttpMethod method;
-    private final String target;
+public class HttpResponse {
     private final HttpVersion version;
-
+    private final int statusCode;
+    private final String statusText;
     private final Map<String, String> headers;
-
     private final byte[] body;
 
-    public HttpRequest(HttpMethod method, String target, HttpVersion version, Map<String, String> headers, byte[] body) {
-        this.method = method;
-        this.target = target;
+    public HttpResponse(HttpVersion version, int statusCode, String statusText, Map<String, String> headers, byte[] body) {
         this.version = version;
+        this.statusCode = statusCode;
+        this.statusText = statusText;
         this.headers = headers;
         this.body = body;
     }
 
-    public HttpMethod getMethod() {
-        return method;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
     public HttpVersion getVersion() {
         return version;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getStatusText() {
+        return statusText;
     }
 
     public Map<String, String> getHeaders() {
@@ -44,24 +42,24 @@ public class HttpRequest {
     }
 
     public static class Builder {
-        private HttpMethod method;
-        private String target;
         private HttpVersion version;
+        private int statusCode;
+        private String statusText;
         private Map<String, String> headers;
         private byte[] body = null;
 
-        public Builder setMethod(HttpMethod method) {
-            this.method = method;
-            return this;
-        }
-
-        public Builder setTarget(String target) {
-            this.target = target;
-            return this;
-        }
-
         public Builder setVersion(HttpVersion version) {
             this.version = version;
+            return this;
+        }
+
+        public Builder setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder setStatusText(String statusText) {
+            this.statusText = statusText;
             return this;
         }
 
@@ -75,8 +73,8 @@ public class HttpRequest {
             return this;
         }
 
-        public HttpRequest build() {
-            return new HttpRequest(method, target, version, headers, body);
+        public HttpResponse build() {
+            return new HttpResponse(version, statusCode, statusText, headers, body);
         }
     }
 }

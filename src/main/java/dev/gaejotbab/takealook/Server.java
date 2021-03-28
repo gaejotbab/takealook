@@ -2,6 +2,7 @@ package dev.gaejotbab.takealook;
 
 import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
+import dev.gaejotbab.gaevlet.HttpResponse;
 import dev.gaejotbab.gaevlet.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,8 @@ public class Server {
     private final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private final int port;
+
+    private final MyBusinessLogicHandler myBusinessLogicHandler = new MyBusinessLogicHandler();
 
     public Server(int port) {
         this.port = port;
@@ -72,41 +75,25 @@ public class Server {
                     .setHeaders(requestHeaders)
                     .build();
 
+            HttpResponse response = myBusinessLogicHandler.handle(request);
+
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStreamWriter);
 
-            int statusCode = 200;
-            String statusText = "OK";
+            printWriter.printf("%s %d %s\r\n",
+                    response.getVersion().getVersionString(),
+                    response.getStatusCode(),
+                    response.getStatusText());
 
-            printWriter.printf("%s %d %s\r\n", version.getVersionString(), statusCode, statusText);
-
-            Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");
-
-            for (Map.Entry<String, String> responseHeaderEntry : responseHeaders.entrySet()) {
+            for (Map.Entry<String, String> responseHeaderEntry : response.getHeaders().entrySet()) {
                 printWriter.printf("%s: %s\r\n", responseHeaderEntry.getKey(), responseHeaderEntry.getValue());
             }
 
             printWriter.println("\r");
+            printWriter.flush();
 
-            String responseBodyString = """
-                    <!DOCTYPE html>
-                    <html lang="ko">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>떼껄룩 테스트 페이지</title>
-                    </head>
-                    <body>
-                        <h1>떼껄룩 테스트 페이지</h1>
-                        <p>별 거 없습니다.</p>
-                    </body>
-                    </html>
-                    """;
-
-            printWriter.print(responseBodyString);
-
-            printWriter.close();
+            socket.getOutputStream().write(response.getBody());
+            socket.getOutputStream().close();
 
             socket.close();
         } catch (IOException e) {
