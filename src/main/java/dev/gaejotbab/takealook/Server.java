@@ -28,7 +28,7 @@ public class Server {
             Socket socket = serverSocket.accept();
 
             BufferedInputStream bufferedInputStream = new BufferedInputStream(socket.getInputStream());
-            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
+            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream, StandardCharsets.UTF_8);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
             String startLine = bufferedReader.readLine();
