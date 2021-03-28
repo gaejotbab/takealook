@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
     private final Logger logger = LoggerFactory.getLogger(Server.class);
@@ -54,31 +55,40 @@ public class Server {
 
             HttpVersion version = HttpVersion.VERSION_1_1;
 
-            HashMap<String, String> headers = new HashMap<>();
+            HashMap<String, String> requestHeaders = new HashMap<>();
 
             String line;
             while ((line = bufferedReader.readLine()).length() > 0) {
                 String headerTokens[] = line.split(": *", 2);
                 String name = headerTokens[0];
                 String value = headerTokens[1];
-                headers.put(name, value);
+                requestHeaders.put(name, value);
             }
 
             HttpRequest request = new HttpRequest.Builder()
                     .setMethod(method)
                     .setTarget(requestTarget)
                     .setVersion(version)
-                    .setHeaders(headers)
+                    .setHeaders(requestHeaders)
                     .build();
 
-            OutputStream outputStream = socket.getOutputStream();
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             PrintWriter printWriter = new PrintWriter(outputStreamWriter);
 
-            printWriter.println("HTTP/1.1 200 OK\r");
-            printWriter.println("Content-Type: text/html; charset=UTF-8\r");
+            int statusCode = 200;
+            String statusText = "OK";
+
+            printWriter.printf("%s %d %s\r\n", version.getVersionString(), statusCode, statusText);
+
+            Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");
+
+            for (Map.Entry<String, String> responseHeaderEntry : responseHeaders.entrySet()) {
+                printWriter.printf("%s: %s\r\n", responseHeaderEntry.getKey(), responseHeaderEntry.getValue());
+            }
+
             printWriter.println("\r");
-            printWriter.println("""
+
+            String responseBodyString = """
                     <!DOCTYPE html>
                     <html lang="ko">
                     <head>
@@ -92,7 +102,10 @@ public class Server {
                         <p>별 거 없습니다.</p>
                     </body>
                     </html>
-                    """);
+                    """;
+
+            printWriter.print(responseBodyString);
+
             printWriter.close();
 
             socket.close();
