@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -28,9 +29,13 @@ public class Server {
 
     private final int port;
 
-    private final HomeGaevlet homeGaevlet = new HomeGaevlet();
-    private final NotFoundGaevlet notFoundGaevlet = new NotFoundGaevlet();
-    private final AboutGaevlet aboutGaevlet = new AboutGaevlet();
+    private final Map<Class<? extends Gaevlet>, Gaevlet> gaevletInstances = new HashMap<>();
+
+    private final Map<String, Class<? extends Gaevlet>> targetGaevletMappings = Map.of(
+            "/", HomeGaevlet.class,
+            "/favicon.ico", NotFoundGaevlet.class,
+            "/about", AboutGaevlet.class
+    );
 
     public Server(int port) {
         this.port = port;
@@ -86,13 +91,25 @@ public class Server {
                     .setHeaders(requestHeaders)
                     .build();
 
-            Map<String, Gaevlet> targetGaevletMappings = Map.of(
-                    "/", homeGaevlet,
-                    "/favicon.ico", notFoundGaevlet,
-                    "/about", aboutGaevlet
-            );
+            Class<? extends Gaevlet> gaevletClass = targetGaevletMappings.getOrDefault(requestTarget, NotFoundGaevlet.class);
 
-            Gaevlet gaevlet = targetGaevletMappings.getOrDefault(requestTarget, notFoundGaevlet);
+            Gaevlet gaevlet = gaevletInstances.get(gaevletClass);
+            if (gaevlet == null) {
+                try {
+                    gaevlet = gaevletClass.getConstructor().newInstance();
+                } catch (InstantiationException e) {
+                    throw new TakealookException("객체 생성에 실패하였습니다.", e);
+                } catch (IllegalAccessException e) {
+                    throw new TakealookException("잘못된 접근입니다.", e);
+                } catch (InvocationTargetException e) {
+                    throw new TakealookException("호출 대상이 잘못되었습니다.", e);
+                } catch (NoSuchMethodException e) {
+                    throw new TakealookException("기본 컨스트럭터가 없습니다.", e);
+                }
+
+                gaevletInstances.put(gaevletClass, gaevlet);
+            }
+
             HttpResponse response = new HttpResponse();
             gaevlet.service(request, response);
 
