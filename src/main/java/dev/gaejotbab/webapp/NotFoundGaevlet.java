@@ -6,7 +6,7 @@ import dev.gaejotbab.gaevlet.HttpResponse;
 
 import java.util.Collections;
 
-public class NotFoundHandler implements Gaevlet {
+public class NotFoundGaevlet implements Gaevlet {
     @Override
     public void service(HttpRequest request, HttpResponse response) {
         response.setVersion(request.getVersion());

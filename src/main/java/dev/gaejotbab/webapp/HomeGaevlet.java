@@ -7,7 +7,7 @@ import dev.gaejotbab.gaevlet.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class HomeHandler implements Gaevlet {
+public class HomeGaevlet implements Gaevlet {
     @Override
     public void service(HttpRequest request, HttpResponse response) {
         Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");

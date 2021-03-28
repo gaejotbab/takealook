@@ -5,9 +5,9 @@ import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
 import dev.gaejotbab.gaevlet.HttpVersion;
-import dev.gaejotbab.webapp.AboutHandler;
-import dev.gaejotbab.webapp.HomeHandler;
-import dev.gaejotbab.webapp.NotFoundHandler;
+import dev.gaejotbab.webapp.AboutGaevlet;
+import dev.gaejotbab.webapp.HomeGaevlet;
+import dev.gaejotbab.webapp.NotFoundGaevlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +28,9 @@ public class Server {
 
     private final int port;
 
-    private final HomeHandler homeHandler = new HomeHandler();
-    private final NotFoundHandler notFoundHandler = new NotFoundHandler();
-    private final AboutHandler aboutHandler = new AboutHandler();
+    private final HomeGaevlet homeGaevlet = new HomeGaevlet();
+    private final NotFoundGaevlet notFoundGaevlet = new NotFoundGaevlet();
+    private final AboutGaevlet aboutGaevlet = new AboutGaevlet();
 
     public Server(int port) {
         this.port = port;
@@ -87,12 +87,12 @@ public class Server {
                     .build();
 
             Map<String, Gaevlet> targetGaevletMappings = Map.of(
-                    "/", homeHandler,
-                    "/favicon.ico", notFoundHandler,
-                    "/about", aboutHandler
+                    "/", homeGaevlet,
+                    "/favicon.ico", notFoundGaevlet,
+                    "/about", aboutGaevlet
             );
 
-            Gaevlet gaevlet = targetGaevletMappings.getOrDefault(requestTarget, notFoundHandler);
+            Gaevlet gaevlet = targetGaevletMappings.getOrDefault(requestTarget, notFoundGaevlet);
             HttpResponse response = new HttpResponse();
             gaevlet.service(request, response);
 
