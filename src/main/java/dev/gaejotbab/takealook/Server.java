@@ -25,8 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -46,6 +49,10 @@ public class Server {
             Runtime.getRuntime().availableProcessors());
 
     private Lock targetGaevletMappingLock = new ReentrantLock();
+
+    private ConcurrentMap<String, Integer> requestTargetCounter = new ConcurrentHashMap<>();
+
+    private AtomicInteger requestCounter = new AtomicInteger(0);
 
     public Server(int port) {
         this.port = port;
@@ -154,6 +161,14 @@ public class Server {
                             throw new TakealookException("기본 컨스트럭터가 없습니다.", e);
                         } finally {
                             targetGaevletMappingLock.unlock();
+                        }
+
+                        requestTargetCounter.compute(
+                                request.getTarget(),
+                                (target, previousValue) -> previousValue == null ? 1 : previousValue + 1);
+
+                        if (requestCounter.incrementAndGet() % 10 == 0) {
+                            logger.info("Request target count: {}", requestTargetCounter);
                         }
 
                         HttpResponse response = new HttpResponse();
