@@ -5,6 +5,7 @@ import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
 import dev.gaejotbab.gaevlet.HttpVersion;
+import dev.gaejotbab.takealook.TargetGaevletClassMapping.MatchingRule;
 import dev.gaejotbab.webapp.AboutGaevlet;
 import dev.gaejotbab.webapp.HomeGaevlet;
 import dev.gaejotbab.webapp.NotFoundGaevlet;
@@ -22,9 +23,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
     private final Logger logger = LoggerFactory.getLogger(Server.class);
@@ -33,14 +37,15 @@ public class Server {
 
     private final Map<Class<? extends Gaevlet>, Gaevlet> gaevletInstances = new HashMap<>();
 
-    private final Map<String, Class<? extends Gaevlet>> targetGaevletMappings = Map.of(
-            "/", HomeGaevlet.class,
-            "/favicon.ico", NotFoundGaevlet.class,
-            "/about", AboutGaevlet.class
-    );
+    private final List<TargetGaevletClassMapping> targetGaevletClassMappings = List.of(
+            TargetGaevletClassMapping.of("/favicon.ico", MatchingRule.EXACT, NotFoundGaevlet.class),
+            TargetGaevletClassMapping.of("/about", MatchingRule.PREFIX, AboutGaevlet.class),
+            TargetGaevletClassMapping.of("/", MatchingRule.EXACT, HomeGaevlet.class));
 
     private ExecutorService connectionHandlingThreadPool = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors());
+
+    private Lock targetGaevletMappingLock = new ReentrantLock();
 
     public Server(int port) {
         this.port = port;
@@ -105,23 +110,50 @@ public class Server {
                                 .setHeaders(requestHeaders)
                                 .build();
 
-                        Class<? extends Gaevlet> gaevletClass = targetGaevletMappings.getOrDefault(requestTarget, NotFoundGaevlet.class);
+                        targetGaevletMappingLock.lock();
 
-                        Gaevlet gaevlet = gaevletInstances.get(gaevletClass);
-                        if (gaevlet == null) {
-                            try {
-                                gaevlet = gaevletClass.getConstructor().newInstance();
-                            } catch (InstantiationException e) {
-                                throw new TakealookException("객체 생성에 실패하였습니다.", e);
-                            } catch (IllegalAccessException e) {
-                                throw new TakealookException("잘못된 접근입니다.", e);
-                            } catch (InvocationTargetException e) {
-                                throw new TakealookException("호출 대상이 잘못되었습니다.", e);
-                            } catch (NoSuchMethodException e) {
-                                throw new TakealookException("기본 컨스트럭터가 없습니다.", e);
+                        Class<? extends Gaevlet> gaevletClass = null;
+
+                        label: for (TargetGaevletClassMapping mapping : targetGaevletClassMappings) {
+                            switch (mapping.matchingRule()) {
+                                case EXACT -> {
+                                    if (requestTarget.equals(mapping.target())) {
+                                        gaevletClass = mapping.gaevletClass();
+                                        break label;
+                                    }
+                                }
+                                case PREFIX -> {
+                                    if (requestTarget.startsWith(mapping.target())) {
+                                        gaevletClass = mapping.gaevletClass();
+                                        break label;
+                                    }
+                                }
                             }
+                        }
 
-                            gaevletInstances.put(gaevletClass, gaevlet);
+                        if (gaevletClass == null) {
+                            gaevletClass = NotFoundGaevlet.class;
+                        }
+
+                        Gaevlet gaevlet;
+
+                        try {
+                            gaevlet = gaevletInstances.get(gaevletClass);
+
+                            if (gaevlet == null) {
+                                gaevlet = gaevletClass.getConstructor().newInstance();
+                                gaevletInstances.put(gaevletClass, gaevlet);
+                            }
+                        } catch (InstantiationException e) {
+                            throw new TakealookException("객체 생성에 실패하였습니다.", e);
+                        } catch (IllegalAccessException e) {
+                            throw new TakealookException("잘못된 접근입니다.", e);
+                        } catch (InvocationTargetException e) {
+                            throw new TakealookException("호출 대상이 잘못되었습니다.", e);
+                        } catch (NoSuchMethodException e) {
+                            throw new TakealookException("기본 컨스트럭터가 없습니다.", e);
+                        } finally {
+                            targetGaevletMappingLock.unlock();
                         }
 
                         HttpResponse response = new HttpResponse();
