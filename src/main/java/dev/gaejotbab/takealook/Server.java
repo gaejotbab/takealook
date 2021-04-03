@@ -50,9 +50,7 @@ public class Server {
 
     private Lock targetGaevletMappingLock = new ReentrantLock();
 
-    private ConcurrentMap<String, Integer> requestTargetCounter = new ConcurrentHashMap<>();
-
-    private AtomicInteger requestCounter = new AtomicInteger(0);
+    private RequestTargetCountingFilter requestTargetCountingFilter = new RequestTargetCountingFilter();
 
     public Server(int port) {
         this.port = port;
@@ -163,16 +161,10 @@ public class Server {
                             targetGaevletMappingLock.unlock();
                         }
 
-                        requestTargetCounter.compute(
-                                request.getTarget(),
-                                (target, previousValue) -> previousValue == null ? 1 : previousValue + 1);
-
-                        if (requestCounter.incrementAndGet() % 10 == 0) {
-                            logger.info("Request target count: {}", requestTargetCounter);
-                        }
-
                         HttpResponse response = new HttpResponse();
-                        gaevlet.service(request, response);
+
+                        requestTargetCountingFilter.process(gaevlet, request, response);
+                        // gaevlet.service(request, response);
 
                         logger.info("{} {}:{} {}",
                                 request.getTarget(),
