@@ -28,6 +28,8 @@ public class Application {
         }
 
         try {
+            logger.info("서버를 시작합니다.");
+
             Server server = new Server(port);
             server.run();
         } catch (TakealookException e) {
