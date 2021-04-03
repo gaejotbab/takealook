@@ -159,6 +159,12 @@ public class Server {
                         HttpResponse response = new HttpResponse();
                         gaevlet.service(request, response);
 
+                        logger.info("{} {}:{} {}",
+                                request.getTarget(),
+                                socket.getInetAddress(),
+                                socket.getPort(),
+                                response.getStatusCode());
+
                         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
                         PrintWriter printWriter = new PrintWriter(outputStreamWriter);
 
