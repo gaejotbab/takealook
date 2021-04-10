@@ -113,6 +113,8 @@ public class Server {
                                 .setTarget(requestTarget)
                                 .setVersion(version)
                                 .setHeaders(requestHeaders)
+                                .setRemoteAddr(socket.getInetAddress().toString())
+                                .setRemotePort(socket.getPort())
                                 .build();
 
                         targetGaevletMappingLock.lock();
@@ -165,12 +167,6 @@ public class Server {
 
                         requestTargetCountingFilter.process(gaevlet, request, response);
                         // gaevlet.service(request, response);
-
-                        logger.info("{} {}:{} {}",
-                                request.getTarget(),
-                                socket.getInetAddress(),
-                                socket.getPort(),
-                                response.getStatusCode());
 
                         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
                         PrintWriter printWriter = new PrintWriter(outputStreamWriter);

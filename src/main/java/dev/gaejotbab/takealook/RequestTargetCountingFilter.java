@@ -17,6 +17,8 @@ public class RequestTargetCountingFilter {
 
     private AtomicInteger requestCounter = new AtomicInteger(0);
 
+    private AccessLogFilter accessLogFilter = new AccessLogFilter();
+
     public void process(Gaevlet gaevlet, HttpRequest request, HttpResponse response) {
         requestTargetCounter.compute(
                 request.getTarget(),
@@ -26,6 +28,7 @@ public class RequestTargetCountingFilter {
             logger.info("Request target count: {}", requestTargetCounter);
         }
 
-        gaevlet.service(request, response);
+        // gaevlet.service(request, response);
+        accessLogFilter.process(gaevlet, request, response);
     }
 }
