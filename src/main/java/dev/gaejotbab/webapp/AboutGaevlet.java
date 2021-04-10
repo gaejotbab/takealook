@@ -1,15 +1,15 @@
 package dev.gaejotbab.webapp;
 
-import dev.gaejotbab.gaevlet.Gaevlet;
+import dev.gaejotbab.gaevlet.HttpGaevlet;
 import dev.gaejotbab.gaevlet.HttpRequest;
 import dev.gaejotbab.gaevlet.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class AboutGaevlet implements Gaevlet {
+public class AboutGaevlet extends HttpGaevlet {
     @Override
-    public void service(HttpRequest request, HttpResponse response) {
+    public void doGet(HttpRequest request, HttpResponse response) {
         Map<String, String> responseHeaders = Map.of("Content-Type", "text/html; charset=UTF-8");
 
         String responseBodyString = """
