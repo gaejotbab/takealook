@@ -1,5 +1,7 @@
 package dev.gaejotbab.takealook;
 
+import dev.gaejotbab.gaevlet.Filter;
+import dev.gaejotbab.gaevlet.FilterChain;
 import dev.gaejotbab.gaevlet.Gaevlet;
 import dev.gaejotbab.gaevlet.HttpMethod;
 import dev.gaejotbab.gaevlet.HttpRequest;
@@ -22,14 +24,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -44,6 +44,10 @@ public class Server {
             TargetGaevletClassMapping.of("/favicon.ico", MatchingRule.EXACT, NotFoundGaevlet.class),
             TargetGaevletClassMapping.of("/about", MatchingRule.PREFIX, AboutGaevlet.class),
             TargetGaevletClassMapping.of("/", MatchingRule.EXACT, HomeGaevlet.class));
+
+    private final List<Filter> filters = List.of(
+            new RequestTargetCountingFilter(),
+            new AccessLogFilter());
 
     private ExecutorService connectionHandlingThreadPool = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors());
@@ -165,8 +169,22 @@ public class Server {
 
                         HttpResponse response = new HttpResponse();
 
-                        requestTargetCountingFilter.process(gaevlet, request, response);
-                        // gaevlet.service(request, response);
+                        List<FilterChain> filterChains = new ArrayList<>(filters.size() + 1);
+
+                        FilterChain lastFilterChain = new GaevletProcessingFilterChain(
+                                gaevlet);
+                        filterChains.add(lastFilterChain);
+
+                        for (int i = filters.size() - 1; i >= 0; --i) {
+                            Filter filter = filters.get(i);
+                            FilterChain filterChain = new DefaultFilterChain(filter, lastFilterChain);
+                            filterChains.add(filterChain);
+
+                            lastFilterChain = filterChain;
+                        }
+
+                        FilterChain firstFilterChain = lastFilterChain;
+                        firstFilterChain.doFilter(request, response);
 
                         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
                         PrintWriter printWriter = new PrintWriter(outputStreamWriter);
